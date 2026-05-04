@@ -135,6 +135,7 @@ function CircularBar:New(id, config)
     self:UpdateLayout()
     self:ApplyClickThrough()
     self:ApplyVisibilityDriver()
+    DCB.StateDriver:Apply(self)
 
     -- Inject option group into global options if they're already built
     if DCB.options then

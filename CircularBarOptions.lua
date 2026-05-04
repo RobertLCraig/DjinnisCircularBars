@@ -174,6 +174,7 @@ function CircularBar:BuildOptionObject()
                             DCB.db.profile.bars[id].numButtons = v
                             bar:UpdateButtons()
                             bar:UpdateLayout()
+                            DCB.StateDriver:Apply(bar)
                         end,
                     },
                     firstSlot = {
@@ -183,6 +184,7 @@ function CircularBar:BuildOptionObject()
                         get = get, set = function(info, v)
                             DCB.db.profile.bars[id].firstSlot = v
                             bar:UpdateButtons()
+                            DCB.StateDriver:Apply(bar)
                         end,
                     },
                     sep2 = { order = 15, type = "description", name = "" },
