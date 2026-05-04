@@ -1,0 +1,14 @@
+# Build output
+releases/
+
+# WoW SavedVariables (never in source)
+DjinnisCircularBarsDB.lua
+
+# Claude Code project files
+.claude/
+
+# OS files
+Thumbs.db
+.DS_Store
+Desktop.ini
+$RECYCLE.BIN/

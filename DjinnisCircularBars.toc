@@ -1,0 +1,29 @@
+## Interface: 120005
+## Title: Djinni's Circular Bars
+## Notes: Action bar buttons arranged in circular and arc layouts
+## Author: Djinni
+## Version: 1.0.0
+## Category: Action Bars
+## SavedVariables: DjinnisCircularBarsDB
+## OptionalDeps: Masque, LibDualSpec-1.0
+
+#@no-lib-strip@
+libs\LibStub\LibStub.lua
+libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+libs\AceAddon-3.0\AceAddon-3.0.xml
+libs\AceDB-3.0\AceDB-3.0.xml
+libs\AceDBOptions-3.0\AceDBOptions-3.0.xml
+libs\AceEvent-3.0\AceEvent-3.0.xml
+libs\AceConsole-3.0\AceConsole-3.0.xml
+libs\AceGUI-3.0\AceGUI-3.0.xml
+libs\AceConfig-3.0\AceConfig-3.0.xml
+libs\LibWindow-1.1\LibWindow-1.1.lua
+libs\LibActionButton-1.0\LibActionButton-1.0.lua
+#@end-no-lib-strip@
+
+DjinnisCircularBars.lua
+CircularBar.lua
+StateDriver.lua
+EditModePanel.lua
+CircularBarOptions.lua
+Options.lua
