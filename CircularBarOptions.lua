@@ -205,6 +205,21 @@ function CircularBar:BuildOptionObject()
                             bar.frame:SetScale(v)
                         end,
                     },
+                    sep3 = { order = 90, type = "description", name = "" },
+                    deleteBar = {
+                        order = 91, type = "execute", name = "Delete This Bar",
+                        desc  = "Permanently removes this bar and its buttons.",
+                        confirm = true,
+                        confirmText = "Delete this bar? This cannot be undone.",
+                        func = function()
+                            DCB:HideEditPanel()
+                            DCB:DisableBar(id)
+                            bar:Destroy()
+                            DCB.db.profile.bars[id] = nil
+                            DCB.options.args["bar_" .. id] = nil
+                            LibStub("AceConfigRegistry-3.0"):NotifyChange("DjinnisCircularBars")
+                        end,
+                    },
                 },
             },
 
@@ -420,23 +435,6 @@ function CircularBar:BuildOptionObject()
                 },
             },
 
-            -- ------------------------------------------------
-            -- Delete bar
-            -- ------------------------------------------------
-            deleteBar = {
-                order = 99, type = "execute", name = "Delete This Bar",
-                desc  = "Permanently removes this bar and its buttons.",
-                confirm = true,
-                confirmText = "Delete this bar? This cannot be undone.",
-                func = function()
-                    DCB:HideEditPanel()
-                    DCB:DisableBar(id)
-                    bar:Destroy()
-                    DCB.db.profile.bars[id] = nil
-                    DCB.options.args["bar_" .. id] = nil
-                    LibStub("AceConfigRegistry-3.0"):NotifyChange("DjinnisCircularBars")
-                end,
-            },
         },
     }
 end
