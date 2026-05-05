@@ -2,12 +2,17 @@ local DCB        = DjinnisCircularBars
 local math_floor = math.floor
 
 -- Singleton quick-settings panel shown when a bar's Edit Mode overlay is clicked.
--- Uses EditModeSettingSliderTemplate (MinimalSliderWithSteppersMixin) to avoid the
--- drag-jumping behaviour of the older OptionsSliderTemplate.
+--
+-- Uses MinimalSliderWithSteppersTemplate directly rather than
+-- EditModeSettingSliderTemplate. The Edit Mode wrapper mixin registers
+-- callbacks that call EditModeSystemSettingsDialog, which is only valid inside
+-- the native Edit Mode dialog. Using the bare slider avoids that dependency
+-- and the double-OnLoad stacking bug that caused sliders to not render.
 
 local PANEL_W  = 290
-local SLIDER_W = 256    -- frame width; slider thumb is 160px like EQoL
-local SLIDER_H = 32     -- matches EQoL DEFAULT_SLIDER_HEIGHT
+local LABEL_W  = 90     -- label column width
+local SLIDER_W = 156    -- MinimalSliderWithSteppers width (fills remaining space)
+local SLIDER_H = 32
 local PAD      = 14
 local PANEL_H  = 200
 
@@ -19,35 +24,31 @@ local savedPosX, savedPosY   -- session-only: last position after a drag
 -- --------------------------------------------------------
 
 local function makeSlider(parent, labelText, minVal, maxVal, stepSize)
-    local f = CreateFrame("Frame", nil, parent, "EditModeSettingSliderTemplate")
-    f:SetSize(SLIDER_W, SLIDER_H)
+    -- Plain container; no template mixin so no OnLoad side-effects.
+    local f = CreateFrame("Frame", nil, parent)
+    f:SetSize(LABEL_W + 5 + SLIDER_W, SLIDER_H)
     f._minVal        = minVal
     f._maxVal        = maxVal
     f._stepSize      = stepSize
     f._currentValue  = minVal
-    f.initInProgress = true   -- suppress any callback fired during setup
+    f.initInProgress = false
 
-    -- Define callback before configuring sub-elements (EQoL pattern).
-    function f:OnSliderValueChanged(value)
-        if self.initInProgress then return end
-        value = math_floor(value + 0.5)
-        if value == self._currentValue then return end
-        self._currentValue = value
-        if self._onChange then self._onChange(value) end
-    end
+    local label = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightMedium")
+    label:SetSize(LABEL_W, SLIDER_H)
+    label:SetPoint("LEFT", f, "LEFT", 0, 0)
+    label:SetJustifyH("LEFT")
+    label:SetText(labelText)
+    f.Label = label
 
-    -- Configure sub-elements before OnLoad (EQoL pattern; sub-elements exist from template).
-    if f.Slider then
-        f.Slider:SetWidth(160)
-        if f.Slider.MinText then f.Slider.MinText:Hide() end
-        if f.Slider.MaxText then f.Slider.MaxText:Hide() end
-    end
-    if f.Label then
-        f.Label:SetText(labelText)
-        f.Label:SetPoint("LEFT")
-    end
+    -- MinimalSliderWithSteppers fires its own OnLoad during CreateFrame.
+    local slider = CreateFrame("Frame", nil, f, "MinimalSliderWithSteppersTemplate")
+    slider:SetSize(SLIDER_W, SLIDER_H)
+    slider:SetPoint("LEFT", label, "RIGHT", 5, 0)
+    if slider.MinText then slider.MinText:Hide() end
+    if slider.MaxText then slider.MaxText:Hide() end
+    f.Slider = slider
 
-    -- Integer right-label formatter, matching EQoL's approach.
+    -- Integer right-label formatter.
     local intFmt = function(v) return tostring(math_floor(v + 0.5)) end
     f.formatters = {}
     if MinimalSliderWithSteppersMixin and MinimalSliderWithSteppersMixin.Label then
@@ -59,13 +60,19 @@ local function makeSlider(parent, labelText, minVal, maxVal, stepSize)
         end
     end
 
-    f:OnLoad()
-    f.initInProgress = false
+    -- Register directly on the slider widget; no mixin OnLoad needed.
+    slider:RegisterCallback(MinimalSliderWithSteppersMixin.Event.OnValueChanged, function(value)
+        if f.initInProgress then return end
+        value = math_floor(value + 0.5)
+        if value == f._currentValue then return end
+        f._currentValue = value
+        if f._onChange then f._onChange(value) end
+    end, f)
 
     return f
 end
 
--- Set slider to a value, suppressing the OnSliderValueChanged callback.
+-- Set slider to a value without firing the onChange callback.
 local function sliderSetValue(f, value)
     f.initInProgress = true
     local steps = math_floor((f._maxVal - f._minVal) / f._stepSize + 0.5)
@@ -122,8 +129,8 @@ local function buildPanel()
     close:SetPoint("TOPRIGHT", panel, "TOPRIGHT", 2, 2)
     close:SetScript("OnClick", function() panel:Hide() end)
 
-    -- Sliders: stacked with 4 px spacing, starting 36 px below the top
-    local Y0 = -36
+    -- Sliders stacked with 4 px gap, starting 36 px below the top
+    local Y0  = -36
     local GAP = 4
 
     local sRadius = makeSlider(panel, "Radius",      20, 600, 5)
