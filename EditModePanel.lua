@@ -61,7 +61,7 @@ local function makeSlider(parent, labelText, minVal, maxVal, stepSize)
     end
 
     -- Register directly on the slider widget; no mixin OnLoad needed.
-    slider:RegisterCallback(MinimalSliderWithSteppersMixin.Event.OnValueChanged, function(value)
+    slider:RegisterCallback(MinimalSliderWithSteppersMixin.Event.OnValueChanged, function(_, value)
         if f.initInProgress then return end
         value = math_floor(value + 0.5)
         if value == f._currentValue then return end
